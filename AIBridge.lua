@@ -1,11 +1,16 @@
--- AIBridge.lua (Fixed Syntax & Universal Request)
+-- ==========================================
+-- AIBridge.lua (Fixed & Ready to Use)
+-- Repository: x7036050-boop/mobile-scripts
+-- ==========================================
+
 local bridge = {}
 
--- ดักจับฟังก์ชัน Request ให้ครอบคลุมทุก Executor บนมือถือ
+-- ดักจับฟังก์ชัน Request ครอบคลุมทุก Mobile Executor (Delta, Fluxus, Codex, Arceus X)
 local requestFunc = (syn and syn.request) or (http and http.request) or http_request or request or (fluxus and fluxus.request)
 local HttpService = game:GetService("HttpService")
 
-local https://my-roblox-ai.x7036050.workers.dev/ = "https://my-roblox-ai.x7036050.workers.dev/"
+-- ลิงก์ Proxy Cloudflare Worker ของพี่ภีม
+local PROXY_URL = "https://my-roblox-ai.x7036050.workers.dev/"
 local chatHistory = {}
 
 function bridge.fetchAI(promptText)
@@ -34,6 +39,36 @@ function bridge.fetchAI(promptText)
         
         if decodeSuccess and data and data.reply then
             local rawReply = data.reply
+            
+            -- บันทึกประวัติบทสนทนา (Memory)
+            table.insert(chatHistory, { role = "user", parts = {{ text = promptText }} })
+            table.insert(chatHistory, { role = "model", parts = {{ text = rawReply }} })
+
+            -- ระบบแกะสลักคำสั่ง [CMD:TYPE:ARG]
+            local cleanReply = rawReply
+            local cmdType, cmdArg = nil, nil
+
+            local cmdMatch = rawReply:match("%[CMD:(%w+):?(.-)%]")
+            if cmdMatch then
+                cleanReply = rawReply:gsub("%[CMD:.-%]", ""):gsub("^%s*(.-)%s*$", "%1")
+                cmdType = rawReply:match("%[CMD:(%w+)")
+                cmdArg = rawReply:match("%[CMD:%w+:?(.-)%]")
+            end
+
+            return cleanReply, cmdType, cmdArg
+        else
+            return "Error: โครงสร้างตอบกลับจาก Worker ไม่ถูกต้อง", nil, nil
+        end
+    else
+        return "Error: ไม่สามารถเชื่อมต่อกับ Server/Worker ได้", nil, nil
+    end
+end
+
+function bridge.clearMemory()
+    chatHistory = {}
+end
+
+return bridge
             
             table.insert(chatHistory, { role = "user", parts = {{ text = promptText }} })
             table.insert(chatHistory, { role = "model", parts = {{ text = rawReply }} })
