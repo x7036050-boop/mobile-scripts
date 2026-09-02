@@ -5,7 +5,7 @@ local bridge = {}
 local requestFunc = (syn and syn.request) or (http and http.request) or http_request or request or (fluxus and fluxus.request)
 local HttpService = game:GetService("HttpService")
 
-local PROXY_URL = "https://my-roblox-ai.x7036050.workers.dev/"
+local https://my-roblox-ai.x7036050.workers.dev/ = "https://my-roblox-ai.x7036050.workers.dev/"
 local chatHistory = {}
 
 function bridge.fetchAI(promptText)
